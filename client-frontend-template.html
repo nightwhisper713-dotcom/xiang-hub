@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>__BRAND_NAME__</title>
+<style>
+:root{
+  --accent:__PRIMARY__; --accent-d:__PRIMARY_D__;
+  --bg:#f3f5f7; --card:#fff; --ink:#1a2430; --dim:#65727f; --line:#e2e7ec; --line2:#eef1f4;
+  --amber:#c98a2b; --amber-bg:#fdf6ea; --red:#c0503f; --green:#3f9d6b;
+  --mono:"IBM Plex Mono","Consolas",monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC",system-ui,sans-serif;line-height:1.6;min-height:100vh}
+header{background:var(--card);border-bottom:2px solid var(--ink);position:sticky;top:0;z-index:30}
+.hwrap{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:14px 22px}
+.brand{font-weight:800;font-size:18px}.brand small{display:block;font-weight:400;font-size:11px;color:var(--dim);letter-spacing:.04em}
+.tabs{display:flex;gap:4px;margin-left:18px}
+.tab{background:none;border:none;border-bottom:2px solid transparent;padding:8px 12px;color:var(--dim);font:inherit;font-size:14px;cursor:pointer}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.gear{margin-left:auto;background:none;border:1px solid var(--line);border-radius:6px;padding:7px 11px;color:var(--dim);cursor:pointer;font-size:13px}
+.gear:hover{border-color:var(--accent);color:var(--accent)}
+main{max-width:1100px;margin:0 auto;padding:22px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.cmd{display:flex;gap:8px}
+.cmd input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:11px 14px;font:inherit;font-size:14px}
+.cmd input:focus{outline:none;border-color:var(--accent)}
+.btn{background:var(--accent);border:none;color:#fff;border-radius:8px;padding:0 18px;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--accent-d)}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 20px}
+.chip{font-size:12px;padding:5px 11px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--dim);cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.result{position:relative;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:6px;padding:14px 40px 14px 16px;margin-bottom:20px;white-space:pre-wrap;word-break:break-word;font-size:14px}
+.result.err{border-left-color:var(--red)} .result .rc{position:absolute;top:8px;right:10px;background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:15px 18px;margin-bottom:12px}
+.card h3{margin:0 0 4px;font-size:15px}
+.card .meta{font-size:12px;color:var(--dim);font-family:var(--mono)}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:4px;background:var(--line2);color:var(--dim);margin-right:6px}
+.verified{color:var(--green);border:1px solid var(--green);border-radius:12px;padding:1px 8px;font-size:11px}
+.warn{color:var(--amber);border:1px solid var(--amber);border-radius:12px;padding:1px 8px;font-size:11px}
+.imgwall{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.imgwall img{width:92px;height:92px;object-fit:cover;border-radius:6px;border:1px solid var(--line);cursor:pointer}
+.empty{text-align:center;color:var(--dim);padding:44px 0}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.tk{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.tk .no{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:40;padding:16px}
+.modal.open{display:flex}
+.sheet{background:var(--card);border-radius:12px;padding:22px;width:min(440px,94vw)}
+.sheet h4{margin:0 0 14px}
+label{display:block;font-size:12px;color:var(--dim);margin:8px 0 4px}
+.sheet input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit}
+.sheet .btn{width:100%;padding:12px;margin-top:16px}
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:50}
+.lb.open{display:flex}.lb img{max-width:92vw;max-height:92vh}
+</style>
+</head>
+<body>
+<header><div class="hwrap">
+  <div class="brand">__BRAND_NAME__<small>__BRAND_SUB__</small></div>
+  <div class="tabs">
+    <button class="tab on" data-v="kb" onclick="switchTab('kb')">知識庫</button>
+    <button class="tab" data-v="tickets" onclick="switchTab('tickets')">工單</button>
+  </div>
+  <button class="gear" onclick="openCfg()">⚙︎ 設定</button>
+</div></header>
+
+<main>
+  <section id="view-kb">
+    <div class="eyebrow">安裝知識庫</div>
+    <div class="cmd">
+      <input id="kbq" placeholder="輸入型號或問題，例：52吋DC吊扇、裝完不轉…" onkeydown="if(event.key==='Enter')ask()">
+      <button class="btn" onclick="ask()">AI 問答</button>
+    </div>
+    <div class="quick">
+      <button class="chip" onclick="fill('有哪些安裝 SOP？')">有哪些 SOP</button>
+      <button class="chip" onclick="fill('')">重新整理</button>
+    </div>
+    <div id="kbResult"></div>
+    <div id="kbList"><div class="empty">載入中…</div></div>
+  </section>
+
+  <section id="view-tickets" style="display:none">
+    <div class="eyebrow">跨部門工單</div>
+    <div class="cmd">
+      <input id="tkq" placeholder="用一句話開單或更新…" onkeydown="if(event.key==='Enter')tkCmd()">
+      <button class="btn" onclick="tkCmd()">送出</button>
+    </div>
+    <div id="tkResult" style="margin-top:12px"></div>
+    <div id="tkBoard" class="board" style="margin-top:14px"><div class="empty">載入中…</div></div>
+  </section>
+</main>
+
+<div class="modal" id="cfg"><div class="sheet">
+  <h4>連線設定</h4>
+  <p style="font-size:13px;color:var(--dim);margin:0 0 6px">只需設定一次，存這台裝置的瀏覽器裡。</p>
+  <label>後端網址</label><input id="cfgUrl" placeholder="https://xxx.onrender.com">
+  <label>存取密碼（APP_TOKEN）</label><input id="cfgTok" placeholder="與後端環境變數相同">
+  <button class="btn" onclick="saveCfg()">儲存</button>
+</div></div>
+<div class="lb" id="lb" onclick="this.classList.remove('open')"><img id="lbImg"></div>
+
+<script>
+const LS='__CFG_KEY__';
+let cfg=JSON.parse(localStorage.getItem(LS)||'{}');
+if(!cfg.url)cfg.url='__BACKEND_URL__';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const md=s=>esc(s).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+const H=()=>({'content-type':'application/json','x-app-token':cfg.token||''});
+
+function openCfg(){$('cfgUrl').value=cfg.url||'';$('cfgTok').value=cfg.token||'';$('cfg').classList.add('open')}
+function saveCfg(){cfg={url:$('cfgUrl').value.trim().replace(/\/$/,''),token:$('cfgTok').value.trim()};
+  localStorage.setItem(LS,JSON.stringify(cfg));$('cfg').classList.remove('open');loadKB();loadBoard()}
+async function api(path,opts={}){const r=await fetch(cfg.url+path,{headers:H(),...opts});
+  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||r.status);return d}
+
+function switchTab(v){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
+  $('view-kb').style.display=v==='kb'?'':'none';$('view-tickets').style.display=v==='tickets'?'':'none'}
+function fill(t){$('kbq').value=t;if(t==='')loadKB();else ask()}
+function box(el,text,err){el.innerHTML=`<div class="result${err?' err':''}"><button class="rc" onclick="this.parentNode.remove()">×</button>${md(text)}</div>`}
+
+async function ask(){const q=$('kbq').value.trim();if(!q)return;
+  box($('kbResult'),'處理中…（伺服器剛喚醒可能等十幾秒）');
+  try{const d=await api('/chat',{method:'POST',body:JSON.stringify({messages:[{role:'user',content:q}]})});
+    box($('kbResult'),d.reply||'（已處理）');loadKB()}
+  catch(e){box($('kbResult'),'⚠ 失敗：'+e.message,true)}}
+
+async function loadKB(){const el=$('kbList');
+  try{const arts=await api('/kb');
+    if(!arts.length){el.innerHTML='<div class="empty">知識庫還沒有資料</div>';return}
+    el.innerHTML=arts.map(a=>{
+      const imgs=Array.isArray(a.images)?a.images:[];
+      const badge=a.verified?'<span class="verified">✓ 已驗證</span>':'<span class="warn">⚠ 未驗證</span>';
+      const sn=a.steps_note?(String(a.steps_note).startsWith('[[AI]]')
+        ?'<div style="margin-top:8px;font-size:13px"><b style="color:var(--accent)">🤖 AI 整理 · 待確認</b><br>'+md(String(a.steps_note).slice(6))+'</div>'
+        :'<div style="margin-top:8px;font-size:13px"><b>安裝重點</b><br>'+md(a.steps_note)+'</div>'):'';
+      return `<div class="card"><h3>${esc(a.title||a.car_model||'—')} ${badge}</h3>
+        <div class="meta">${esc(a.car_model||'')} ${esc(a.year_range||'')} ${esc(a.variant||'')} · ${imgs.length} 張圖</div>
+        ${a.troubleshooting?'<div style="margin-top:8px;font-size:13px">'+md(a.troubleshooting)+'</div>':''}${sn}
+        <div class="imgwall">${imgs.slice(0,12).map(x=>`<img src="${esc(x.url)}" onclick="lightbox('${esc(x.url)}')">`).join('')}</div></div>`;
+    }).join('')}
+  catch(e){el.innerHTML='<div class="empty">讀取失敗：'+esc(e.message)+'（請確認右上⚙︎設定）</div>'}}
+
+async function tkCmd(){const q=$('tkq').value.trim();if(!q)return;
+  box($('tkResult'),'處理中…');
+  try{const d=await api('/chat',{method:'POST',body:JSON.stringify({messages:[{role:'user',content:q}]})});
+    box($('tkResult'),d.reply||'（已處理）');$('tkq').value='';loadBoard()}
+  catch(e){box($('tkResult'),'⚠ 失敗：'+e.message,true)}}
+
+async function loadBoard(){const el=$('tkBoard');
+  try{const ts=await api('/tickets');
+    if(!ts.length){el.innerHTML='<div class="empty">目前沒有工單</div>';return}
+    el.innerHTML=ts.map(t=>`<div class="tk"><div class="no">#${esc(t.ticket_no)}</div>
+      <div style="font-weight:600;margin:4px 0">${esc(t.title)}</div>
+      <div class="meta">${esc(t.stage||'')} · ${esc(t.status||'')} ${t.owner_dept?'· '+esc(t.owner_dept):''}</div></div>`).join('')}
+  catch(e){el.innerHTML='<div class="empty">讀取失敗：'+esc(e.message)+'</div>'}}
+
+function lightbox(u){$('lbImg').src=u;$('lb').classList.add('open')}
+
+if(!cfg.token)openCfg();
+loadKB();loadBoard();
+</script>
+</body>
+</html>
