@@ -10,10 +10,25 @@
 // ============================================================
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, APP_TOKEN, PORT = 3000 } = process.env;
 const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+
+// 客戶前端模板（與本檔同資料夾，一起放進 repo）
+let TEMPLATE = '';
+try { TEMPLATE = fs.readFileSync(path.join(__dirname, 'client-frontend-template.html'), 'utf8'); }
+catch (_) { console.warn('找不到 client-frontend-template.html，前端生成功能不可用'); }
+
+// 把 hex 顏色加深，給 accent-d 用
+function darken(hex, amt = 0.18) {
+  const m = String(hex).replace('#', '').match(/^([0-9a-f]{6})$/i);
+  if (!m) return hex;
+  const p = [0, 2, 4].map(i => Math.round(parseInt(m[1].slice(i, i + 2), 16) * (1 - amt)));
+  return '#' + p.map(v => Math.max(0, v).toString(16).padStart(2, '0')).join('');
+}
 
 const app = express();
 app.use(cors());
@@ -71,6 +86,25 @@ app.delete('/deployments/:id', requireToken, async (req, res) => {
 });
 
 // 健康檢查：伺服器端逐一 ping 每個部署的 backend_url + health_path（前端呼叫這支，免 CORS 問題）
+// 一鍵生成客戶前端：套模板 → 回傳客製好的 HTML（由前端觸發下載成 index.html，你自己拖去 Netlify 部署）
+app.post('/generate-frontend', requireToken, async (req, res) => {
+  try {
+    if (!TEMPLATE) return res.status(500).json({ error: '伺服器缺少前端模板檔' });
+    const b = req.body || {};
+    if (!b.brand_name || !b.backend_url) return res.status(400).json({ error: 'brand_name 與 backend_url 必填' });
+    const primary = /^#[0-9a-f]{6}$/i.test(b.primary || '') ? b.primary : '#0F5C8C';
+    const cfgKey = 'cfg_' + String(b.brand_name).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20) + '_' + Math.random().toString(36).slice(2, 6);
+    const html = TEMPLATE
+      .split('__PRIMARY_D__').join(darken(primary))
+      .split('__PRIMARY__').join(primary)
+      .split('__BRAND_NAME__').join(b.brand_name)
+      .split('__BRAND_SUB__').join(b.brand_sub || '安裝支援平台')
+      .split('__BACKEND_URL__').join(String(b.backend_url).replace(/\/$/, ''))
+      .split('__CFG_KEY__').join(cfgKey);
+    res.json({ ok: true, html, filename: 'index.html', bytes: Buffer.byteLength(html, 'utf8') });
+  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+
 app.get('/check-health', requireToken, async (_, res) => {
   const { data } = await sb.from('hub_deployments').select('id,backend_url,health_path').not('backend_url', 'is', null);
   const out = {};
